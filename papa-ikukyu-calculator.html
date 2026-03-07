@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>育休給付金シミュレーター | 新米パパナビ - NewPapa</title>
+<link href="https://fonts.googleapis.com/css2?family=Rounded+Mplus+1c:wght@400;500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky: #4fc3f7;
+    --sky-dark: #0288d1;
+    --mint: #80cbc4;
+    --peach: #ffab91;
+    --yellow: #fff176;
+    --bg: #f0f9ff;
+    --white: #ffffff;
+    --text: #2d3748;
+    --text-light: #718096;
+    --border: #bee3f8;
+    --card: #ffffff;
+    --green: #68d391;
+    --green-dark: #38a169;
+    --orange: #f6ad55;
+    --blue-soft: #ebf8ff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(79,195,247,0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(128,203,196,0.15) 0%, transparent 50%);
+    font-family: 'Nunito', 'Rounded Mplus 1c', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: linear-gradient(135deg, #4fc3f7 0%, #26c6da 50%, #80cbc4 100%);
+    padding: 28px 20px 36px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: var(--bg);
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  }
+  .header-icon { font-size: 52px; margin-bottom: 8px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); }
+  header h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    margin-bottom: 6px;
+  }
+  header p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.9);
+    font-weight: 600;
+  }
+  .new-badge {
+    display: inline-block;
+    background: #ff6b6b;
+    color: white;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: 6px;
+    vertical-align: middle;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  .main {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 20px rgba(79,195,247,0.12);
+    border: 1.5px solid var(--border);
+  }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--sky-dark);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title .emoji { font-size: 20px; }
+
+  .form-group { margin-bottom: 16px; }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+  label .hint {
+    font-weight: 500;
+    color: #a0aec0;
+    font-size: 12px;
+  }
+
+  input[type="number"], select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 15px;
+    font-family: inherit;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--blue-soft);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+  input[type="number"]:focus, select:focus {
+    border-color: var(--sky);
+    box-shadow: 0 0 0 3px rgba(79,195,247,0.2);
+    background: white;
+  }
+
+  .input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .input-group input { flex: 1; }
+  .unit {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-light);
+    white-space: nowrap;
+  }
+
+  .radio-group {
+    display: flex;
+    gap: 10px;
+  }
+  .radio-btn {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-light);
+    background: var(--blue-soft);
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .radio-btn.active {
+    border-color: var(--sky);
+    background: linear-gradient(135deg, #e0f7fa, #b2ebf2);
+    color: var(--sky-dark);
+  }
+  .radio-btn:hover { border-color: var(--sky); }
+
+  .calc-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #4fc3f7, #26c6da);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-size: 17px;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 15px rgba(79,195,247,0.4);
+    margin-top: 8px;
+  }
+  .calc-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(79,195,247,0.5);
+  }
+  .calc-btn:active { transform: translateY(0); }
+
+  /* RESULTS */
+  .results { display: none; }
+  .results.show { display: block; animation: fadeUp 0.4s ease; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-hero {
+    background: linear-gradient(135deg, #e0f7fa 0%, #e8f5e9 100%);
+    border-radius: 20px;
+    padding: 28px 24px;
+    text-align: center;
+    margin-bottom: 16px;
+    border: 2px solid #b2dfdb;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-hero::before {
+    content: '🎉';
+    font-size: 80px;
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    opacity: 0.12;
+  }
+  .result-hero-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green-dark);
+    margin-bottom: 4px;
+  }
+  .result-hero-amount {
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--green-dark);
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .result-hero-sub {
+    font-size: 13px;
+    color: #68d391;
+    font-weight: 600;
+  }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .result-item {
+    background: white;
+    border-radius: 16px;
+    padding: 16px;
+    border: 1.5px solid var(--border);
+    text-align: center;
+  }
+  .result-item .label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-light);
+    margin-bottom: 6px;
+  }
+  .result-item .amount {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--sky-dark);
+  }
+  .result-item .amount.orange { color: #e67e22; }
+  .result-item .amount.green { color: var(--green-dark); }
+  .result-item .sub {
+    font-size: 11px;
+    color: #a0aec0;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  /* GRAPH */
+  .graph-wrap {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1.5px solid var(--border);
+    box-shadow: 0 4px 20px rgba(79,195,247,0.08);
+  }
+  .graph-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .graph-bars { display: flex; flex-direction: column; gap: 10px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-label { font-size: 12px; font-weight: 700; color: var(--text-light); width: 52px; flex-shrink: 0; text-align: right; }
+  .bar-track {
+    flex: 1;
+    height: 28px;
+    background: #f0f9ff;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+    transition: width 1s cubic-bezier(0.4,0,0.2,1);
+    white-space: nowrap;
+  }
+  .bar-amount { font-size: 12px; font-weight: 700; color: var(--text); width: 80px; text-align: right; }
+
+  /* LEGEND */
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text-light); }
+  .legend-dot { width: 12px; height: 12px; border-radius: 4px; flex-shrink: 0; }
+
+  /* INFO BOX */
+  .info-box {
+    background: #fff8e1;
+    border: 1.5px solid #ffe082;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 12px;
+    color: #856404;
+    font-weight: 600;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .info-box .info-title {
+    font-size: 13px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .disclaimer {
+    font-size: 11px;
+    color: #a0aec0;
+    text-align: center;
+    line-height: 1.6;
+    padding: 0 8px;
+  }
+
+  @media (max-width: 480px) {
+    .result-grid { grid-template-columns: 1fr; }
+    .result-hero-amount { font-size: 38px; }
+    header h1 { font-size: 21px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="background:rgba(255,255,255,0.15);padding:8px 20px;display:flex;align-items:center;justify-content:space-between;max-width:720px;margin:0 auto;width:100%;">
+    <a href="index.html" style="font-size:18px;font-weight:800;color:white;text-decoration:none;letter-spacing:0.5px;">🍼 新米パパナビ</a>
+    <a href="index.html" style="font-size:12px;color:rgba(255,255,255,0.85);text-decoration:none;font-weight:600;">← トップへ</a>
+  </div>
+  <div class="header-icon">👨‍👶</div>
+  <h1>育休給付金シミュレーター<span class="new-badge">2026年最新版</span></h1>
+  <p>産後パパ育休・育児休業・出生後休業支援給付金を一括計算</p>
+</header>
+
+<div class="main">
+
+  <!-- INPUT -->
+  <div class="card">
+    <div class="card-title"><span class="emoji">💰</span> 給与・休業情報を入力</div>
+
+    <div class="form-group">
+      <label>月額給与（額面）<span class="hint"> ※基本給＋各種手当の合計。通勤手当も会社によっては含む</span></label>
+      <div class="input-group">
+        <input type="number" id="salary" placeholder="例：350000" min="0" step="1000">
+        <span class="unit">円 / 月</span>
+      </div>
+      <div style="font-size:11px;color:#a0aec0;margin-top:4px;line-height:1.5">💡 給付金の計算は「育休前6ヶ月の賃金合計÷180日」が日額ベース。残業代・住宅手当・通勤手当など毎月支払われるものを含めた金額を入力してください。日額上限：16,110円（＝月上限323,811円・67%期間）</div>
+    </div>
+
+    <div class="form-group">
+      <label>① 産後パパ育休の取得日数<span class="hint"> ※生後8週間以内・最大28日・2回まで分割可</span></label>
+      <div class="input-group">
+        <input type="number" id="papaDays" placeholder="例：28" min="1" max="28" value="28">
+        <span class="unit">日間</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>② その後の育児休業の取得期間<span class="hint"> ※産後パパ育休とは別枠。最長子が2歳まで</span></label>
+      <div class="input-group">
+        <input type="number" id="ikukyuMonths" placeholder="例：3" min="0" max="18" value="0">
+        <span class="unit">ヶ月</span>
+      </div>
+      <div style="font-size:11px;color:#a0aec0;margin-top:4px;line-height:1.5">💡 産後パパ育休（最大28日）とは別に、子が1歳になるまで育児休業を追加取得できます</div>
+    </div>
+
+    <div class="form-group">
+      <label>配偶者（妻）も育休取得する？</label>
+      <div class="radio-group">
+        <div class="radio-btn active" id="wifeYes" onclick="setWife(true)">✅ はい（14日以上）</div>
+        <div class="radio-btn" id="wifeNo" onclick="setWife(false)">❌ いいえ / 専業主婦</div>
+      </div>
+    </div>
+
+    <button class="calc-btn" onclick="calculate()">🧮 給付金を計算する</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results" id="results">
+
+    <div class="result-hero" id="heroBox">
+      <div class="result-hero-label">育休中に受け取れる給付金の合計（概算）</div>
+      <div class="result-hero-amount" id="totalAmount">¥0</div>
+      <div class="result-hero-sub" id="heroSub">社会保険料免除も含めると実質手取りは約10割！</div>
+    </div>
+
+    <div class="result-grid">
+      <div class="result-item">
+        <div class="label">📋 産後パパ育休給付金</div>
+        <div class="amount orange" id="papaBenefitAmt">¥0</div>
+        <div class="sub" id="papaBenefitSub">給与の67%</div>
+      </div>
+      <div class="result-item">
+        <div class="label">🆕 出生後休業支援給付金</div>
+        <div class="amount green" id="shienAmt">¥0</div>
+        <div class="sub" id="shienSub">給与の13%上乗せ</div>
+      </div>
+      <div class="result-item">
+        <div class="label">🏖️ 育児休業給付金</div>
+        <div class="amount" id="ikukyuAmt">¥0</div>
+        <div class="sub" id="ikukyuSub">産後パパ育休後の期間</div>
+      </div>
+      <div class="result-item">
+        <div class="label">🛡️ 社会保険料免除額（概算）</div>
+        <div class="amount green" id="insuranceAmt">¥0</div>
+        <div class="sub">健康保険＋厚生年金</div>
+      </div>
+    </div>
+
+    <!-- グラフ -->
+    <div class="graph-wrap">
+      <div class="graph-title">📊 月別手取りシミュレーション</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#4fc3f7"></div>育休前の手取り</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#80cbc4"></div>育休中の受取額</div>
+      </div>
+      <div class="graph-bars" id="graphBars"></div>
+    </div>
+
+    <!-- 新制度 info -->
+    <div class="info-box" id="shienInfoBox">
+      <div class="info-title">🆕 出生後休業支援給付金とは？</div>
+      2025年4月から新設。パパ・ママ両方が14日以上育休を取ると、産後パパ育休の期間（最大28日）に給与の13%が上乗せ支給されます。育休給付金（67%）と合わせると80%、社会保険料免除も含めると実質<strong>手取りほぼ100%</strong>になります！
+    </div>
+
+    <p class="disclaimer">※この計算は概算です。賃金日額の上限は16,110円（2026年7月31日まで）、67%期間の月上限は323,811円、50%期間は241,650円。実際の給付額は雇用保険の加入状況・標準報酬月額・勤務日数等により異なります。詳細はハローワークにご確認ください。</p>
+  </div>
+
+</div>
+
+<script>
+  let wifeIkukyu = true;
+
+  function setWife(val) {
+    wifeIkukyu = val;
+    document.getElementById('wifeYes').classList.toggle('active', val);
+    document.getElementById('wifeNo').classList.toggle('active', !val);
+  }
+
+  function fmt(n) {
+    return '¥' + Math.floor(n).toLocaleString('ja-JP');
+  }
+
+  function calculate() {
+    const salary = parseFloat(document.getElementById('salary').value) || 0;
+    const papaDays = Math.min(parseFloat(document.getElementById('papaDays').value) || 0, 28);
+    const ikukyuMonths = parseFloat(document.getElementById('ikukyuMonths').value) || 0;
+
+    if (salary <= 0) {
+      alert('月額給与を入力してください');
+      return;
+    }
+
+    // 2026年7月まで有効の賃金日額上限：16,110円
+    const DAILY_MAX = 16110;
+
+    // 日額計算（上限適用）
+    const dailyWageRaw = Math.floor(salary / 30);
+    const dailyWage = Math.min(dailyWageRaw, DAILY_MAX);
+
+    // 正しい上限額（日額上限16,110円ベース）
+    // 67%期間：16,110×30×0.67 = 323,811円
+    // 50%期間：16,110×30×0.50 = 241,650円
+    // 出生後休業支援給付金：16,110×28×0.13 ≒ 58,722円（28日上限）
+    const UPPER_67 = 323811;
+    const UPPER_50 = 241650;
+
+    // 産後パパ育休給付金（67%・日額上限適用）
+    const papaBenefit = Math.min(Math.floor(dailyWage * papaDays * 0.67), Math.floor(UPPER_67 * papaDays / 30));
+
+    // 出生後休業支援給付金（13%上乗せ・産後パパ育休期間のみ）
+    const shienEligible = true; // 2025年改正で専業主婦（夫）・ひとり親も対象
+    const shienBenefit = shienEligible ? Math.min(Math.floor(dailyWage * papaDays * 0.13), Math.floor(16110 * papaDays * 0.13)) : 0;
+
+    // 育児休業給付金（180日=約6ヶ月までが67%、181日目以降が50%）
+    let ikukyuBenefit = 0;
+    for (let m = 1; m <= ikukyuMonths; m++) {
+      if (m <= 6) {
+        ikukyuBenefit += Math.min(Math.floor(dailyWage * 30 * 0.67), UPPER_67);
+      } else {
+        ikukyuBenefit += Math.min(Math.floor(dailyWage * 30 * 0.50), UPPER_50);
+      }
+    }
+
+    // 社会保険料免除（給与の約15%概算）
+    const totalRestDays = papaDays + ikukyuMonths * 30;
+    const insuranceExemption = Math.floor(salary * 0.15 * (totalRestDays / 30));
+
+    // 合計
+    const total = papaBenefit + shienBenefit + ikukyuBenefit;
+
+    // 手取り概算（額面の約80%）
+    const netSalary = Math.floor(salary * 0.8);
+
+    // 表示
+    document.getElementById('totalAmount').textContent = fmt(total);
+    document.getElementById('heroSub').textContent =
+      `社会保険料免除（約${fmt(insuranceExemption)}）も含めると実質手取りはほぼ100%！`;
+
+    document.getElementById('papaBenefitAmt').textContent = fmt(papaBenefit);
+    document.getElementById('papaBenefitSub').textContent = `${papaDays}日間 × 給与の67%`;
+
+    document.getElementById('shienAmt').textContent = fmt(shienBenefit);
+    document.getElementById('shienSub').textContent = shienEligible
+      ? `${papaDays}日間 × 給与の13%（新制度）`
+      : '条件非該当';
+
+    document.getElementById('ikukyuAmt').textContent = fmt(ikukyuBenefit);
+    document.getElementById('ikukyuSub').textContent = ikukyuMonths > 0
+      ? `${ikukyuMonths}ヶ月間（前半67%/後半50%）`
+      : '取得なし';
+
+    document.getElementById('insuranceAmt').textContent = fmt(insuranceExemption);
+
+    // グラフ生成
+    buildGraph(netSalary, dailyWage, papaDays, shienEligible, ikukyuMonths);
+
+    document.getElementById('results').classList.add('show');
+    setTimeout(() => {
+      document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }
+
+  function buildGraph(netSalary, dailyWage, papaDays, shienEligible, ikukyuMonths) {
+    const bars = document.getElementById('graphBars');
+    bars.innerHTML = '';
+
+    const months = [];
+
+    // 産後パパ育休期間（最大1ヶ月として表示）
+    const papaNet = Math.floor(dailyWage * papaDays * (0.67 + (shienEligible ? 0.13 : 0)));
+    months.push({ label: '産後パパ\n育休', amount: papaNet, type: 'papa' });
+
+    // 育休期間
+    for (let m = 1; m <= Math.min(ikukyuMonths, 6); m++) {
+      const rate = m <= 6 ? 0.67 : 0.50;
+      months.push({ label: `育休\n${m}ヶ月目`, amount: Math.floor(dailyWage * 30 * rate), type: 'ikukyu' });
+    }
+    for (let m = 7; m <= ikukyuMonths; m++) {
+      months.push({ label: `育休\n${m}ヶ月目`, amount: Math.floor(dailyWage * 30 * 0.50), type: 'ikukyu2' });
+    }
+
+    const maxVal = Math.max(netSalary, ...months.map(m => m.amount));
+
+    months.forEach(item => {
+      const pct = Math.round((item.amount / maxVal) * 100);
+      const colors = {
+        papa: 'linear-gradient(90deg,#ff8a65,#ffab91)',
+        ikukyu: 'linear-gradient(90deg,#4fc3f7,#81d4fa)',
+        ikukyu2: 'linear-gradient(90deg,#81d4fa,#b3e5fc)'
+      };
+
+      const row = document.createElement('div');
+      row.className = 'bar-row';
+      row.innerHTML = `
+        <div class="bar-label" style="font-size:10px;line-height:1.3">${item.label.replace('\n','<br>')}</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:0%;background:${colors[item.type]||colors.ikukyu}" data-pct="${pct}">
+            ${pct > 25 ? Math.round(item.amount/netSalary*100)+'%' : ''}
+          </div>
+        </div>
+        <div class="bar-amount">${fmt(item.amount)}</div>
+      `;
+      bars.appendChild(row);
+    });
+
+    // アニメーション
+    setTimeout(() => {
+      document.querySelectorAll('.bar-fill').forEach(el => {
+        el.style.width = el.dataset.pct + '%';
+      });
+    }, 100);
+  }
+</script>
+</body>
+</html>
